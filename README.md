@@ -4,6 +4,7 @@ ethereum wallet package for creating and generating wallet, transferring ETH, ge
 
 ### Nodes 
 using infura nodes in this repository 
+register at infura and get your http and ws node on mainnet, goerli or sepolia network and set it here 
 ```
 node := ethereumWallet.Node{
 		Http: "https://goerli.infura.io/v3/89aae5ec52f9450ebe4fc58cbb8138fd",

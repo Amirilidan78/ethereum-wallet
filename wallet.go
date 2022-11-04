@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"errors"
+	"fmt"
 	"github.com/Amirilidan78/ethereum-wallet/geth"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"math/big"
 )
 
 type Node struct {
@@ -62,13 +64,13 @@ func CreateEthereumWallet(node Node, privateKeyHex string) *EthereumWallet {
 
 // struct functions
 
-func (t *EthereumWallet) PrivateKeyRCDSA() (*ecdsa.PrivateKey, error) {
-	return privateKeyFromHex(t.PrivateKey)
+func (ew *EthereumWallet) PrivateKeyRCDSA() (*ecdsa.PrivateKey, error) {
+	return privateKeyFromHex(ew.PrivateKey)
 }
 
-func (t *EthereumWallet) PrivateKeyBytes() ([]byte, error) {
+func (ew *EthereumWallet) PrivateKeyBytes() ([]byte, error) {
 
-	priv, err := t.PrivateKeyRCDSA()
+	priv, err := ew.PrivateKeyRCDSA()
 	if err != nil {
 		return []byte{}, err
 	}
@@ -125,17 +127,44 @@ func getAddressFromPublicKey(publicKey *ecdsa.PublicKey) string {
 
 // balance
 
-func (t *EthereumWallet) Balance() (int64, error) {
+func (ew *EthereumWallet) Balance() (int64, error) {
 
-	c, err := geth.GetGETHClient(t.Node.Http)
+	c, err := geth.GetGETHClient(ew.Node.Http)
 	if err != nil {
 		return 0, err
 	}
 
-	balance, err := c.BalanceAt(context.Background(), common.HexToAddress(t.Address), nil)
+	balance, err := c.BalanceAt(context.Background(), common.HexToAddress(ew.Address), nil)
 	if err != nil {
 		return 0, err
 	}
 
 	return balance.Int64(), nil
+}
+
+// transaction
+
+func (ew *EthereumWallet) Transfer(toAddressHex string, amountInWei *big.Int) (string, error) {
+
+	privateRCDSA, err := ew.PrivateKeyRCDSA()
+	if err != nil {
+		return "", fmt.Errorf("RCDSA private key error: %v", err)
+	}
+
+	tx, err := createTransactionInput(ew.Node, ew.Address, toAddressHex, amountInWei)
+	if err != nil {
+		return "", fmt.Errorf("creating tx pb error: %v", err)
+	}
+
+	tx, err = signTransaction(ew.Node, tx, privateRCDSA)
+	if err != nil {
+		return "", fmt.Errorf("signing transaction error: %v", err)
+	}
+
+	txId, err := broadcastTransaction(ew.Node, tx)
+	if err != nil {
+		return "", fmt.Errorf("broadcast transaction error: %v", err)
+	}
+
+	return txId, nil
 }
