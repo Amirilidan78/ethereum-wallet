@@ -32,3 +32,46 @@ w.PublicKey // strnig
 balanceInWei,err := w.Balance()
 balanceInWei // int64 
 ```
+- crawl blocks for addresses transactions
+```
+
+c := &Crawler{
+		Node: node, 
+		Addresses: []string{
+			"0x5A2187B6d76a09F649CDC5d69F182697cFBA126B", // list of your addresses
+		},
+	}
+	
+res, err := c.ScanBlocks(40) // scan latest 40 block on block chain and extract addressess transactions 
+
+Example 
+// *
+{
+    {
+        "address": "TY3PJu3VY8xVUc5BjYwJtyRgP7TfivV666",
+        "tranasctions": {
+            {
+                "tx_id": "0xa1d76647e2c9ff4ceeda382137e7af9bb2879fce96cfc743d7138a8d54e532db",
+                "from_address": "0x5a2187b6d76a09f649cdc5d69f182697cfba126b",
+                "to_address": "0x75c07e7207bb00cf60c77f2506d7ce2b8d18bf0f",
+                "amount": "21000000000",
+                "confirmations": 2,
+            }
+        }
+    },
+    ...
+}
+* // 
+	
+```
+- crawl blocks for addresses transactions
+```
+txId, err := w.Transfer(toAddressHex, amount)
+txId // string 
+```
+
+
+```
+I simplified this repository github.com/ethereum/go-ethereum to create this package
+You can check go it for better examples and functionalities
+```

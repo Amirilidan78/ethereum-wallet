@@ -102,7 +102,6 @@ func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, blo
 
 		txMsg, errMessage := transaction.AsMessage(blockSigner, nil)
 		if errMessage != nil {
-			fmt.Println("error in getting signer")
 			continue
 		}
 
@@ -116,6 +115,7 @@ func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, blo
 		if txMsg.Value() == nil {
 			continue
 		}
+
 		amount := txMsg.Value().Int64()
 
 		txId := transaction.Hash().Hex()

@@ -26,9 +26,9 @@ func createTransactionInput(node Node, fromAddressHex string, toAddressHex strin
 		return nil, err
 	}
 
-	gasLimit := uint64(30000)
-	gasFeeCap := big.NewInt(100 * params.GWei)
-	gasTipCap := big.NewInt(params.GWei)
+	gasLimit := uint64(21000)
+	gasFeeCap := big.NewInt(1500 * params.GWei)
+	gasTipCap := big.NewInt(100 * params.GWei)
 
 	chainID, err := client.NetworkID(context.Background())
 	if err != nil {
