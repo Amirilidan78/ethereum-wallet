@@ -12,7 +12,7 @@ node := ethereumWallet.Node{
 }
 ```
 
-### Main methods
+### Wallet methods
 - generating ethereum wallet
 ```
 w := GenerateEthereumWallet(node)
@@ -27,10 +27,15 @@ w.Address // strnig
 w.PrivateKey // strnig 
 w.PublicKey // strnig 
 ```
-- getting wallet balance
+- getting wallet ETH balance
 ```
 balanceInWei,err := w.Balance()
 balanceInWei // int64 
+```
+- getting wallet ERC20 balance
+```
+balanceInTokenSubAmount,err := w.BalanceERC20(token)
+balanceInTokenSubAmount // int64 
 ```
 - crawl blocks for addresses transactions
 ```
@@ -64,16 +69,47 @@ Example
 * // 
 	
 ```
-- crawl blocks for addresses transactions
+- transfer ETH from wallet
 ```
 txId, err := w.Transfer(toAddressHex, amount)
 txId // string 
 ```
+- transfer ERC20 from wallet
+```
+txId, err := w.TransferERC20(token, toAddressHex, amount)
+txId // string 
+```
 
+
+### Token methods
+- declaring token
+```
+token := &ethereumWallet.Token{
+    ContractAddress: enums.GOERLI_USDC
+}
+```
+- Getting token name
+```
+token.GetName(w.Node, w.AddressHex) // return string,error
+``` 
+- Getting token symbol
+```
+token.GetSymbol(w.Node, w.AddressHex) // return string,error
+```
+- Getting token decimals
+```
+token.GetDecimals(w.Node, w.AddressHex) // return int64,error
+```
 
 ```
 I simplified this repository github.com/ethereum/go-ethereum to create this package
 You can check go it for better examples and functionalities
+```
+
+### Supported contracts
+check enums/contracts file alternatively you can create your own contract
+```
+contractAddress := enums.CreateContractAddress("0x509Ee0d083DdF8AC028f2a56731412edD63223B9")
 ```
 
 ### ETH goerli Faucet
@@ -81,5 +117,9 @@ check this link https://goerlifaucet.com
 
 ### USDC goerli Faucet
 check this link https://usdcfaucet.com/
+ 
+### Important
+I simplified this repository github.com/ethereum/go-ethereum repository to create this package You can check go it for better examples and functionalities and do not use this package in production, I created this package for education purposes.
 
-
+### TODOS
+- add erc20 to crawler

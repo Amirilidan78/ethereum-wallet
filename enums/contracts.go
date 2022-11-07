@@ -13,8 +13,8 @@ func (ca ContractAddress) Bytes() []byte {
 	return bytes
 }
 
-func CreateContractAddress(contractAddressBase58 string) ContractAddress {
-	return ContractAddress(contractAddressBase58)
+func CreateContractAddress(contractAddressHex string) ContractAddress {
+	return ContractAddress(contractAddressHex)
 }
 
 const (
