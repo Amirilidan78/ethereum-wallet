@@ -43,11 +43,11 @@ func GenerateEthereumWallet(node Node) *EthereumWallet {
 	}
 }
 
-func CreateEthereumWallet(node Node, privateKeyHex string) *EthereumWallet {
+func CreateEthereumWallet(node Node, privateKeyHex string) (*EthereumWallet, error) {
 
 	privateKey, err := privateKeyFromHex(privateKeyHex)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	publicKey, _ := getPublicKeyFromPrivateKey(privateKey)
@@ -60,7 +60,7 @@ func CreateEthereumWallet(node Node, privateKeyHex string) *EthereumWallet {
 		Address:    address,
 		PrivateKey: privateKeyHex,
 		PublicKey:  publicKeyHex,
-	}
+	}, nil
 }
 
 // struct functions
