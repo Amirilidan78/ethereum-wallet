@@ -125,3 +125,4 @@ I simplified this repository github.com/ethereum/go-ethereum repository to creat
 - add address is valid function
 - check to address before transfer trx or trc20
 - add erc20 to crawler
+- add crawler test 
