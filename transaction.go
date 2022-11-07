@@ -5,8 +5,10 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"github.com/Amirilidan78/ethereum-wallet/geth"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 )
@@ -79,4 +81,33 @@ func broadcastTransaction(node Node, transaction *types.Transaction) (string, er
 	fmt.Println(transaction)
 
 	return transaction.Hash().Hex(), nil
+}
+
+func createERC20Transaction(c *ethclient.Client, ew *EthereumWallet) (*bind.TransactOpts, error) {
+
+	privateRCDSA, err := ew.PrivateKeyRCDSA()
+	if err != nil {
+		return nil, fmt.Errorf("RCDSA private key error: %v", err)
+	}
+
+	fromAddress := common.HexToAddress(ew.Address)
+	n, err := c.NonceAt(context.Background(), fromAddress, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	chainID, err := c.NetworkID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	signer := types.LatestSignerForChainID(chainID)
+
+	return &bind.TransactOpts{
+		From:  fromAddress,
+		Nonce: big.NewInt(int64(n)),
+		Signer: func(addr common.Address, localTx *types.Transaction) (*types.Transaction, error) {
+			return types.SignTx(localTx, signer, privateRCDSA)
+		},
+	}, nil
 }

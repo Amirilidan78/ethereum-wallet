@@ -75,3 +75,11 @@ txId // string
 I simplified this repository github.com/ethereum/go-ethereum to create this package
 You can check go it for better examples and functionalities
 ```
+
+### ETH goerli Faucet
+check this link https://goerlifaucet.com
+
+### USDC goerli Faucet
+check this link https://usdcfaucet.com/
+
+

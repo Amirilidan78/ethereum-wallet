@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Amirilidan78/ethereum-wallet/geth"
+	token "github.com/Amirilidan78/ethereum-wallet/geth/contractErc20"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -142,6 +143,16 @@ func (ew *EthereumWallet) Balance() (int64, error) {
 	return balance.Int64(), nil
 }
 
+func (ew *EthereumWallet) BalanceERC20(token *Token) (int64, error) {
+
+	balance, err := token.GetBalance(ew.Node, ew.Address)
+	if err != nil {
+		return 0, err
+	}
+
+	return balance.Int64(), nil
+}
+
 // transaction
 
 func (ew *EthereumWallet) Transfer(toAddressHex string, amountInWei *big.Int) (string, error) {
@@ -167,4 +178,31 @@ func (ew *EthereumWallet) Transfer(toAddressHex string, amountInWei *big.Int) (s
 	}
 
 	return txId, nil
+}
+
+func (ew *EthereumWallet) TransferERC20(t *Token, toAddressHex string, amountInTokenSubAmount *big.Int) (string, error) {
+
+	c, err := geth.GetGETHClient(ew.Node.Http)
+	if err != nil {
+		return "", err
+	}
+
+	contractAddress := common.HexToAddress(t.ContractAddress.String())
+	toAddress := common.HexToAddress(toAddressHex)
+	tokenInstance, err := token.NewToken(contractAddress, c)
+	if err != nil {
+		return "", err
+	}
+
+	txInput, err := createERC20Transaction(c, ew)
+	if err != nil {
+		return "", err
+	}
+
+	tx, err := tokenInstance.Transfer(txInput, toAddress, amountInTokenSubAmount)
+	if err != nil {
+		return "", err
+	}
+
+	return tx.Hash().Hex(), nil
 }
