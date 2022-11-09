@@ -2,6 +2,18 @@
 ethereum wallet package for creating and generating wallet, transferring ETH, getting wallet balance and crawling blocks to find wallet transactions
 
 
+### Installation
+```
+go get github.com/Amirilidan78/ethereum-wallet@v0.1.0
+```
+
+### Test
+test for `Crawler`, `EthereumWallet` and `Token` located at /test
+```
+go test ./test
+```
+
+
 ### Nodes 
 using infura nodes in this repository 
 register at infura and get your http and ws node on mainnet, goerli or sepolia network and set it here 
@@ -124,5 +136,3 @@ I simplified this repository github.com/ethereum/go-ethereum repository to creat
 ### TODOS
 - add address is valid function
 - check to address before transfer trx or trc20
-- add erc20 to crawler
-- add crawler test 

@@ -180,8 +180,6 @@ func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, blo
 
 		for _, ourAddress := range c.Addresses {
 			if ourAddress == toAddress || ourAddress == fromAddress {
-				j, _ := transaction.MarshalJSON()
-				fmt.Println(string(j))
 				txs = append(txs, CrawlTransaction{
 					TxId:          txId,
 					FromAddress:   fromAddress,
