@@ -2,8 +2,11 @@ package ethereumWallet
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/Amirilidan78/ethereum-wallet/enums"
 	"github.com/Amirilidan78/ethereum-wallet/geth"
+	"github.com/Amirilidan78/ethereum-wallet/util"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
@@ -29,6 +32,7 @@ type CrawlTransaction struct {
 	FromAddress   string
 	ToAddress     string
 	Amount        uint64
+	Symbol        string
 }
 
 func (c *Crawler) ScanBlocks(count int) ([]CrawlResult, error) {
@@ -68,6 +72,38 @@ func (c *Crawler) ScanBlocks(count int) ([]CrawlResult, error) {
 	return c.prepareCrawlResultFromTransactions(allTransactions), nil
 }
 
+func (c *Crawler) ScanBlocksFromTo(from int, to int) ([]CrawlResult, error) {
+
+	if to-from < 1 {
+		return nil, errors.New("to number should be more than from number")
+	}
+
+	var wg sync.WaitGroup
+
+	var allTransactions [][]CrawlTransaction
+
+	client, err := geth.GetGETHClient(c.Node.Http)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := client.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := to; i > from; i-- {
+		wg.Add(1)
+		// sleep to avoid 503 error
+		time.Sleep(100 * time.Millisecond)
+		go c.getBlockData(&wg, client, block, &allTransactions, int64(i))
+	}
+
+	wg.Wait()
+
+	return c.prepareCrawlResultFromTransactions(allTransactions), nil
+}
+
 func (c *Crawler) getBlockData(wg *sync.WaitGroup, client *ethclient.Client, currentBlock *types.Block, allTransactions *[][]CrawlTransaction, num int64) {
 
 	defer wg.Done()
@@ -85,11 +121,9 @@ func (c *Crawler) getBlockData(wg *sync.WaitGroup, client *ethclient.Client, cur
 func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, block *types.Block) []CrawlTransaction {
 
 	chainConfig := params.MainnetChainConfig
-
 	if strings.Contains(c.Node.Http, "goerli") {
 		chainConfig = params.GoerliChainConfig
 	}
-
 	if strings.Contains(c.Node.Http, "sepolia") {
 		chainConfig = params.SepoliaChainConfig
 	}
@@ -99,6 +133,8 @@ func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, blo
 	var txs []CrawlTransaction
 
 	for _, transaction := range block.Transactions() {
+
+		symbol := "ETH"
 
 		txMsg, errMessage := transaction.AsMessage(blockSigner, nil)
 		if errMessage != nil {
@@ -118,17 +154,41 @@ func (c *Crawler) extractOurTransactionsFromBlock(currentBlock *types.Block, blo
 
 		amount := txMsg.Value().Int64()
 
+		// is ERC20 token transfer
+		if len(transaction.Data()) > 0 {
+
+			tokenData, exist := util.ParsDataErc20TokenTransfer(transaction.Data())
+			if !exist {
+				continue
+			}
+
+			// toAddress -> contract address
+
+			var err error
+			token := Token{ContractAddress: enums.CreateContractAddress(toAddress)}
+			symbol, err = token.GetSymbol(c.Node)
+			if err != nil {
+				continue
+			}
+
+			amount = tokenData.Value.Int64()
+			toAddress = tokenData.To
+		}
+
 		txId := transaction.Hash().Hex()
 		confirmations := int64(currentBlock.NumberU64() - block.NumberU64())
 
 		for _, ourAddress := range c.Addresses {
 			if ourAddress == toAddress || ourAddress == fromAddress {
+				j, _ := transaction.MarshalJSON()
+				fmt.Println(string(j))
 				txs = append(txs, CrawlTransaction{
 					TxId:          txId,
 					FromAddress:   fromAddress,
 					ToAddress:     toAddress,
 					Amount:        uint64(amount),
 					Confirmations: confirmations,
+					Symbol:        symbol,
 				})
 			}
 		}
