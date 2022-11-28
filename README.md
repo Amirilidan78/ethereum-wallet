@@ -4,7 +4,7 @@ ethereum wallet package for creating and generating wallet, transferring ETH, ge
 
 ### Installation
 ```
-go get github.com/Amirilidan78/ethereum-wallet@v0.1.0
+go get github.com/amir-ranjbar-dev/ethereum-wallet@v1.0.0
 ```
 
 ### Test
