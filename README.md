@@ -133,6 +133,5 @@ check this link https://usdcfaucet.com/
 ### Important
 I simplified this repository github.com/ethereum/go-ethereum repository to create this package You can check go it for better examples and functionalities and do not use this package in production, I created this package for education purposes.
 
-### TODOS
-- add address is valid function
-- check to address before transfer trx or trc20
+### Donate
+fill free to donate `0xe342C7ff6a91dF208Fb4bE6Eca02e19D624188C1`
